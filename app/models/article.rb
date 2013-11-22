@@ -122,17 +122,20 @@ class Article < Content
 
   end
 
-  def merge_with(id)
-    article_to_merge = Article.find(id)
-    self.body = self.body + article_to_merge.body
-    Article.create!(:title => self.title, :author => self.author, :user_id => self.user_id, :body => self.body, :allow_pings => true, :allow_comments => true, :published => true)
-    comments = Comment.find(:all, :conditions => "type = 'Comment' and (article_id = '#{id}' or article_id = '#{self.id}')")
-    comments.each do |com|
-      com.article_id = Article.find(:last).id
-      com.save!
+  def merge_with(other_article_id)
+    tomerge = Article.find_by_id(other_article_id)
+    if not self.id or not tomerge.id
+      return false
     end
-    Article.destroy(id)
-    Article.destroy(self.id)
+
+    self.body = self.body + "\n\n" + tomerge.body
+    self.comments << tomerge.comments
+    self.save!
+
+    tomerge = Article.find_by_id(other_article_id)
+    tomerge.destroy
+
+    return true
   end
 
   def year_url
