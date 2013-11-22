@@ -34,6 +34,14 @@ class Admin::ContentController < Admin::BaseController
       flash[:error] = _("Error, you are not allowed to perform this action")
       return
     end
+    if current_user.admin?
+      @merge = "<h4>Merge Articles</h4>
+                <form>
+                 <label style=\"text-align: left\">Article ID&nbsp;</label>
+          <input type=\"text\", id=\"merge_with\", name=\"merge_with\" size=30 /> <br/>
+         <input type=\"submit\", id=\"merge_button\", name=\"merge_button\", value=\"Merge\" />
+                </form>"
+    end
     new_or_edit
   end
 
@@ -62,7 +70,7 @@ class Admin::ContentController < Admin::BaseController
   end
 
   def category_add; do_add_or_remove_fu; end
-  alias_method :resource_add,    :category_add
+  alias_method :resource_add, :category_add
   alias_method :resource_remove, :category_add
 
   def attachment_box_add
@@ -77,7 +85,7 @@ class Admin::ContentController < Admin::BaseController
 
   def attachment_save(attachment)
     begin
-      Resource.create(:filename => attachment.original_filename, :mime => attachment.content_type.chomp, 
+      Resource.create(:filename => attachment.original_filename, :mime => attachment.content_type.chomp,
                       :created_at => Time.now).write_to_disk(attachment)
     rescue => e
       logger.info(e.message)
@@ -120,8 +128,8 @@ class Admin::ContentController < Admin::BaseController
       parent_id = @article.id
       @article = Article.drafts.child_of(parent_id).first || Article.new
       @article.allow_comments = this_blog.default_allow_comments
-      @article.allow_pings    = this_blog.default_allow_pings
-      @article.parent_id      = parent_id
+      @article.allow_pings = this_blog.default_allow_pings
+      @article.parent_id = parent_id
     end
   end
 
@@ -201,7 +209,7 @@ class Admin::ContentController < Admin::BaseController
   def set_article_author
     return if @article.author
     @article.author = current_user.login
-    @article.user   = current_user
+    @article.user = current_user
   end
 
   def set_article_title_for_autosave

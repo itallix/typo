@@ -17,6 +17,15 @@ module NavigationHelpers
       '/'
     when /^the new article page$/
       '/admin/content/new'
+    when /^the edit page for "([^"]*)"$/ then
+        title = page_name.match(/"(.*)"/)
+        Content.create!(:title => title, :type => 'Article', :body => "This is a non-admin article")
+        article = Content.find(:all, :conditions => ["type = \"Article\"", "title = #{title}"])
+        article.each do |art|
+          print art
+          @id = art.id
+        end
+        %{/admin/content/edit/#{@id}}
 
     # Add more mappings here.
     # Here is an example that pulls values out of the Regexp:
